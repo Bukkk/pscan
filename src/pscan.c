@@ -1,12 +1,14 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <threads.h>
+#include <time.h>
 
 #include "analyzer.h"
 #include "printer.h"
 #include "reader.h"
 
 #include "pcp.h"
+#include "signals.h"
 #include "ring_buffer.h"
 #include "str.h"
 #include "string.h"
@@ -22,8 +24,9 @@ static int thread_reader(void* arg)
 {
     ReaderArgs* a = (ReaderArgs*)arg;
 
+    Str proc_stat = {0};
     while (true) {
-        Str proc_stat = read_file("/proc/stat");
+        proc_stat = read_file("/proc/stat");
 
         pcp_section_producer_begin(a->pcp_reader_analyzer, a->virt);
         if (pcp_section_exits(a->pcp_reader_analyzer)) {
@@ -36,6 +39,7 @@ static int thread_reader(void* arg)
         pcp_section_producer_end(a->pcp_reader_analyzer);
     }
 
+    str_destroy(&proc_stat);
     return 0;
 }
 
@@ -50,6 +54,7 @@ static int thread_analyzer(void* arg)
 {
     AnalyzerArgs* a = (AnalyzerArgs*)arg;
 
+    AnalyzedData* analyzed = {0};
     while (true) {
         pcp_section_consumer_begin(a->pcp_reader_analyzer, a->virt_string);
         if (pcp_section_exits(a->pcp_reader_analyzer)) {
@@ -62,7 +67,7 @@ static int thread_analyzer(void* arg)
 
         pcp_section_consumer_end(a->pcp_reader_analyzer);
 
-        AnalyzedData* analyzed = analyze_data(&str);
+        analyzed = analyze_data(&str);
         str_destroy(&str);
 
         pcp_section_producer_begin(a->pcp_analyzer_printer, a->virt_analized);
@@ -75,6 +80,8 @@ static int thread_analyzer(void* arg)
 
         pcp_section_producer_end(a->pcp_analyzer_printer);
     }
+
+    an_destroy(analyzed);
 
     return 0;
 }
@@ -110,12 +117,17 @@ static int thread_printer(void* arg)
     return 0;
 }
 
-// #include <unistd.h> // do testowania stopu TODO usun
+extern Pcp g_pcp_reader_analyzer;
+extern Pcp g_pcp_analyzer_printer;
+Pcp g_pcp_reader_analyzer;
+Pcp g_pcp_analyzer_printer;
 
 int main(void)
 {
-    Pcp* pcp_reader_analyzer = pcp_create();
-    Pcp* pcp_analyzer_printer = pcp_create();
+    signals_init();
+
+    pcp_init(&g_pcp_reader_analyzer);
+    pcp_init(&g_pcp_analyzer_printer);
 
     RingBuffer* rb_string = rb_create(3, sizeof(Str));
     PcpContainerVirt virt_string = {
@@ -132,17 +144,17 @@ int main(void)
     };
 
     ReaderArgs reader_args = {
-        .pcp_reader_analyzer = pcp_reader_analyzer,
+        .pcp_reader_analyzer = &g_pcp_reader_analyzer,
         .virt = &virt_string
     };
     AnalyzerArgs analyzer_args = {
-        .pcp_reader_analyzer = pcp_reader_analyzer,
-        .pcp_analyzer_printer = pcp_analyzer_printer,
+        .pcp_reader_analyzer = &g_pcp_reader_analyzer,
+        .pcp_analyzer_printer = &g_pcp_analyzer_printer,
         .virt_string = &virt_string,
         .virt_analized = &virt_analyzed_ptr
     };
     PrinterArgs printer_args = {
-        .pcp_analyzer_printer = pcp_analyzer_printer,
+        .pcp_analyzer_printer = &g_pcp_analyzer_printer,
         .virt = &virt_analyzed_ptr
     };
 

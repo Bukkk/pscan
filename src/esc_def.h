@@ -1,6 +1,6 @@
 #pragma once
 
-#define ESC_CSI "\e["
+#define ESC_CSI "\033["
 
 #define ESC_CURS_UP(n) ESC_CSI #n "A"
 #define ESC_CURS_DOWN(n) ESC_CSI #n "B"

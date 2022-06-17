@@ -1,24 +1,17 @@
 #include "pcp.h"
 
-#include <malloc.h>
 #include <stdbool.h>
 #include <threads.h>
 
-Pcp* pcp_create()
+bool pcp_init(Pcp* pcp)
 {
-    Pcp* pcp = malloc(sizeof(*pcp));
-    if (pcp == NULL) {
-        return NULL;
-    }
-
     *pcp = (Pcp) { 0 };
 
     if (mtx_init(&pcp->mutex, mtx_plain) != thrd_success || cnd_init(&pcp->can_consume) != thrd_success || cnd_init(&pcp->can_produce) != thrd_success) {
-        free(pcp);
-        return NULL;
+        return false;
     }
 
-    return pcp;
+    return true;
 }
 
 bool pcp_section_exits(Pcp* pcp)

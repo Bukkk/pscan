@@ -20,7 +20,7 @@ typedef struct {
 } PcpContainerVirt;
 
 
-Pcp* pcp_create(void);
+bool pcp_init(Pcp* pcp);
 bool pcp_section_exits(Pcp* pcp);
 void pcp_stop(Pcp* pcp);
 

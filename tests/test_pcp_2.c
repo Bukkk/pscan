@@ -1,8 +1,9 @@
 #include "pcp.c"
 #include "pcp.h"
 
-#include "assert.h"
+#include <assert.h>
 #include <threads.h>
+#include <stdio.h>
 
 static bool stub_is_empty(int* k)
 {
@@ -88,13 +89,14 @@ static int thread_consumer(void* arg)
 
 int main()
 {
-    Pcp* pcp = pcp_create();
+    Pcp pcp = {0};
+    pcp_init(&pcp);
 
     thrd_t producer;
-    thrd_create(&producer, thread_producer, pcp);
+    thrd_create(&producer, thread_producer, &pcp);
 
     thrd_t consumer;
-    thrd_create(&consumer, thread_consumer, pcp);
+    thrd_create(&consumer, thread_consumer, &pcp);
 
     thrd_join(producer, NULL);
     thrd_join(consumer, NULL);

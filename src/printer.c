@@ -14,7 +14,7 @@ void print_analized_data(AnalyzedData* analyzed)
 
         printf("core%3zu: ", core);
 
-        size_t dots = WIDTH * usage;
+        size_t dots = (size_t)(WIDTH * usage);
         printf("[");
         if (usage < 0.3) {
             printf(ESC_SGR_FGR_COLOR_RGB(50, 255, 50));

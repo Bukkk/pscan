@@ -1,8 +1,9 @@
 #include "pcp.c"
 #include "pcp.h"
 
-#include "assert.h"
+#include <assert.h>
 #include <threads.h>
+#include <stdio.h>
 
 static bool stub_is_empty(int* k)
 {
@@ -35,11 +36,12 @@ static void stub_container_get(int* k, char s[])
 int g_k;
 int g_kk;
 
-Pcp* g_pcp_k;
-Pcp* g_pcp_kk;
+Pcp g_pcp_k;
+Pcp g_pcp_kk;
 
 static int thread_producer(void* arg)
 {
+    (void)arg;
     PcpContainerVirt virt = {
         .container = &g_k,
         .is_empty = (bool (*)(const void*))stub_is_empty,
@@ -47,15 +49,15 @@ static int thread_producer(void* arg)
     };
 
     while (true) {
-        pcp_section_producer_begin(g_pcp_k, &virt);
-        if (pcp_section_exits(g_pcp_k)) {
+        pcp_section_producer_begin(&g_pcp_k, &virt);
+        if (pcp_section_exits(&g_pcp_k)) {
             break;
         }
 
         assert(!virt.is_full(virt.container));
         stub_container_add(&g_k, "producer");
 
-        pcp_section_producer_end(g_pcp_k);
+        pcp_section_producer_end(&g_pcp_k);
     }
 
     return 0;
@@ -63,6 +65,7 @@ static int thread_producer(void* arg)
 
 static int thread_middleman(void* arg)
 {
+    (void)arg;
     PcpContainerVirt virt_k = {
         .container = &g_k,
         .is_empty = (bool (*)(const void*))stub_is_empty,
@@ -76,25 +79,25 @@ static int thread_middleman(void* arg)
     };
 
     while (true) {
-        pcp_section_consumer_begin(g_pcp_k, &virt_k);
-        if (pcp_section_exits(g_pcp_k)) {
+        pcp_section_consumer_begin(&g_pcp_k, &virt_k);
+        if (pcp_section_exits(&g_pcp_k)) {
             break;
         }
 
         assert(!virt_k.is_empty(virt_k.container));
         stub_container_get(&g_k, "middleman");
 
-        pcp_section_consumer_end(g_pcp_k);
+        pcp_section_consumer_end(&g_pcp_k);
 
-        pcp_section_producer_begin(g_pcp_kk, &virt_kk);
-        if (pcp_section_exits(g_pcp_kk)) {
+        pcp_section_producer_begin(&g_pcp_kk, &virt_kk);
+        if (pcp_section_exits(&g_pcp_kk)) {
             break;
         }
 
         assert(!virt_kk.is_full(virt_kk.container));
         stub_container_add(&g_kk, "middleman");
 
-        pcp_section_producer_end(g_pcp_kk);
+        pcp_section_producer_end(&g_pcp_kk);
     }
 
     return 0;
@@ -102,6 +105,7 @@ static int thread_middleman(void* arg)
 
 static int thread_consumer(void* arg)
 {
+    (void)arg;
     PcpContainerVirt virt = {
         .container = &g_kk,
         .is_empty = (bool (*)(const void*))stub_is_empty,
@@ -109,15 +113,15 @@ static int thread_consumer(void* arg)
     };
 
     while (true) {
-        pcp_section_consumer_begin(g_pcp_kk, &virt);
-        if (pcp_section_exits(g_pcp_kk)) {
+        pcp_section_consumer_begin(&g_pcp_kk, &virt);
+        if (pcp_section_exits(&g_pcp_kk)) {
             break;
         }
 
         assert(!virt.is_empty(virt.container));
         stub_container_get(&g_kk, "consumer");
 
-        pcp_section_consumer_end(g_pcp_kk);
+        pcp_section_consumer_end(&g_pcp_kk);
     }
 
     return 0;
@@ -125,8 +129,8 @@ static int thread_consumer(void* arg)
 
 int main()
 {
-    g_pcp_k = pcp_create();
-    g_pcp_kk = pcp_create();
+    pcp_init(&g_pcp_k);
+    pcp_init(&g_pcp_kk);
 
     thrd_t producer;
     thrd_create(&producer, thread_producer, NULL);

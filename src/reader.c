@@ -7,7 +7,7 @@
 
 Str read_file(const char path[const])
 {
-    enum { TRY_SIZE = 4096 };
+    enum { TRY_SIZE = 8196 }; // ponad 4k na moim cpu
     Str string = str_create(TRY_SIZE);
     if (string.data == NULL) {
         return string;
