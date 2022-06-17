@@ -20,12 +20,12 @@ Pcp* pcp_create()
     return pcp;
 }
 
-bool pcp_exits(Pcp* pcp)
+bool pcp_exits(const Pcp* pcp)
 {
     return pcp->exits;
 }
 
-void pcp_producer_section_begin(Pcp* pcp, PcpContainerVirt* virt)
+void pcp_producer_section_begin(Pcp* pcp, const PcpContainerVirt* virt)
 {
     mtx_lock(&pcp->mutex);
     if (virt->is_full(virt->container)) {

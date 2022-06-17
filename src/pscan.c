@@ -33,9 +33,61 @@ static void stub_container_add(int* k, Str str)
     printf("container::add -> \"%s\"\n", str.data);
 }
 
+typedef struct {
+    Pcp* pcp;
+    PcpContainerVirt* virt;
+} ReaderArgs;
+
 static int thread_reader(void* arg)
 {
-    Pcp* pcp = *(Pcp**)arg;
+    ReaderArgs reader_args = *(ReaderArgs*)arg;
+    Pcp* pcp = reader_args.pcp;
+    PcpContainerVirt* virt = reader_args.virt;    
+
+    while (true) {
+        pcp_producer_section_begin(pcp, virt);
+        if (pcp_exits(pcp)){
+            break;
+        }
+
+        Str proc_stat = read_file("/proc/stat");
+        stub_container_add(virt->container, proc_stat);
+
+        pcp_producer_section_end(pcp);
+    }
+
+    return 0;
+}
+
+static int thread_analyzer(void* arg)
+{
+    // Pcp* pcp = *(Pcp**)arg;
+
+    // int k = 0;
+    // PcpContainerVirt virt = {
+    //     .container = &k,
+    //     .is_empty = stub_is_empty,
+    //     .is_full = stub_is_full
+    // };
+
+    // while (true) {
+    //     pcp_producer_section_begin(pcp, &virt);
+    //     if (pcp_exits(pcp)){
+    //         break;
+    //     }
+
+    //     Str proc_stat = read_file("/proc/stat");
+    //     stub_container_add(virt.container, proc_stat);
+
+    //     pcp_producer_section_end(pcp);
+    // }
+
+    // return 0;
+}
+
+int main(void/*int argc, char* argv[]*/) {
+
+    Pcp* pcp = pcp_create();
 
     int k = 0;
     PcpContainerVirt virt = {
@@ -44,27 +96,13 @@ static int thread_reader(void* arg)
         .is_full = stub_is_full
     };
 
-    while (true) {
-        pcp_producer_section_begin(pcp, &virt);
-        if (pcp_exits(pcp)){
-            break;
-        }
-
-        Str proc_stat = read_file("/proc/stat");
-        stub_container_add(virt.container, proc_stat);
-
-        pcp_producer_section_end(pcp);
-    }
-
-    return 0;
-}
-
-int main(void/*int argc, char* argv[]*/) {
-
-    Pcp* pcp = pcp_create();
+    ReaderArgs reader_args = {
+        .pcp = pcp,
+        .virt = &virt
+    };
 
     thrd_t reader;
-    thrd_create(&reader, thread_reader, &pcp);
+    thrd_create(&reader, thread_reader, &reader_args);
 
     // thrd_t consumer;
     // thrd_create(&consumer, thread_consumer, &pcp);

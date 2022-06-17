@@ -22,8 +22,8 @@ typedef struct {
 
 Pcp* pcp_create(void);
 
-bool pcp_exits(Pcp* pcp);
-void pcp_producer_section_begin(Pcp* pcp, PcpContainerVirt* virt);
+bool pcp_exits(const Pcp* pcp);
+void pcp_producer_section_begin(Pcp* pcp, const PcpContainerVirt* virt);
 void pcp_producer_section_end(Pcp* pcp);
 
 
