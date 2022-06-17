@@ -21,14 +21,19 @@ Pcp* pcp_create()
     return pcp;
 }
 
-bool pcp_exits(const Pcp* pcp)
+bool pcp_section_exits(Pcp* pcp)
 {
-    return pcp->exits;
+    if (pcp->exits) {
+        mtx_unlock(&pcp->mutex);
+        return true;
+    }
+
+    return false;
 }
 
-void pcp_producer_section_begin(Pcp* pcp, const PcpContainerVirt* virt)
+void pcp_section_producer_begin(Pcp* pcp, const PcpContainerVirt* virt)
 {
-    if (pcp_exits(pcp)) {
+    if (pcp_section_exits(pcp)) {
         return;
     }
 
@@ -44,9 +49,9 @@ void pcp_producer_section_end(Pcp* pcp)
     mtx_unlock(&pcp->mutex);
 }
 
-void pcp_consumer_section_begin(Pcp* pcp, const PcpContainerVirt* virt)
+void pcp_section_consumer_begin(Pcp* pcp, const PcpContainerVirt* virt)
 {
-    if (pcp_exits(pcp)) {
+    if (pcp_section_exits(pcp)) {
         return;
     }
     

@@ -54,9 +54,8 @@ static int thread_reader(void* arg)
     PcpContainerVirt* virt = reader_args.virt;
 
     while (true) {
-        pcp_producer_section_begin(pcp, virt);
-        if (pcp_exits(pcp)) {
-            mtx_unlock(&pcp->mutex);
+        pcp_section_producer_begin(pcp, virt);
+        if (pcp_section_exits(pcp)) {
             break;
         }
 
@@ -81,9 +80,8 @@ static int thread_analyzer(void* arg)
     PcpContainerVirt* virt = analyzer_args.virt;
 
     while (true) {
-        pcp_consumer_section_begin(pcp, virt);
-        if (pcp_exits(pcp)) {
-            mtx_unlock(&pcp->mutex);
+        pcp_section_consumer_begin(pcp, virt);
+        if (pcp_section_exits(pcp)) {
             break;
         }
 
