@@ -62,7 +62,7 @@ static int thread_reader(void* arg)
         Str proc_stat = read_file("/proc/stat");
         stub_container_add(virt->container, proc_stat);
 
-        pcp_producer_section_end(pcp);
+        pcp_section_producer_end(pcp);
     }
 
     return 0;
@@ -88,7 +88,7 @@ static int thread_analyzer(void* arg)
         Str str = stub_container_get(virt->container);
         
 
-        pcp_consumer_section_end(pcp);
+        pcp_section_consumer_end(pcp);
     }
 
     return 0;
@@ -123,7 +123,7 @@ int main(void /*int argc, char* argv[]*/)
     thrd_t consumer;
     thrd_create(&consumer, thread_analyzer, &analyzer_args);
 
-    usleep(20000);
+    usleep(1000000);
     printf("stop... ");
     pcp_stop(pcp);
     printf("OK\n");

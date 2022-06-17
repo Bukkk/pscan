@@ -43,7 +43,7 @@ void pcp_section_producer_begin(Pcp* pcp, const PcpContainerVirt* virt)
     }
 }
 
-void pcp_producer_section_end(Pcp* pcp)
+void pcp_section_producer_end(Pcp* pcp)
 {
     cnd_signal(&pcp->can_consume);
     mtx_unlock(&pcp->mutex);
@@ -61,7 +61,7 @@ void pcp_section_consumer_begin(Pcp* pcp, const PcpContainerVirt* virt)
     }
 }
 
-void pcp_consumer_section_end(Pcp* pcp)
+void pcp_section_consumer_end(Pcp* pcp)
 {
     cnd_signal(&pcp->can_produce);
     mtx_unlock(&pcp->mutex);
