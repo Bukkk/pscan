@@ -1,0 +1,1 @@
+exe = executable('pscan', 'pscan.c')
