@@ -82,6 +82,7 @@ AnalyzedData* analyze_data(const Str* str)
     static CpuStats prevs[128] = { 0 };
     static bool is_first = true;
     if (is_first) {
+        is_first = false;
         return NULL;
     }
 
@@ -116,11 +117,9 @@ AnalyzedData* analyze_data(const Str* str)
 
         prevs[id] = stats;
 
-        double proc = ((double)(total_diff - idle_diff)) / total_diff;
+        double proc = total_diff ? ((double)(total_diff - idle_diff)) / total_diff : 0;
         an_set(an, id, proc);
     }
-
-    is_first = false;
 
     return an;
 }
