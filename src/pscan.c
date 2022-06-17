@@ -102,7 +102,7 @@ static int thread_printer(void* arg)
 
         if (analyzed != NULL) {
             print_analized_data(analyzed);
-            thrd_sleep(&(struct timespec) { .tv_nsec = 1000 * 1000 * 20 }, NULL);
+            thrd_sleep(&(struct timespec) { .tv_nsec = 1000 * 1000 * 200 }, NULL);
         }
         an_destroy(analyzed);
     }
