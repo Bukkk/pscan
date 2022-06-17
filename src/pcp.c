@@ -1,6 +1,7 @@
 #include "pcp.h"
 
 #include <malloc.h>
+#include <stdbool.h>
 
 Pcp* pcp_create()
 {
@@ -17,4 +18,23 @@ Pcp* pcp_create()
     }
 
     return pcp;
+}
+
+bool pcp_exits(Pcp* pcp)
+{
+    return pcp->exits;
+}
+
+void pcp_producer_section_begin(Pcp* pcp, PcpContainerVirt* virt)
+{
+    mtx_lock(&pcp->mutex);
+    if (virt->is_full(virt->container)) {
+        cnd_wait(&pcp->can_produce, &pcp->mutex);
+    }
+}
+
+void pcp_producer_section_end(Pcp* pcp)
+{
+    cnd_signal(&pcp->can_consume);
+    mtx_unlock(&pcp->mutex);
 }
