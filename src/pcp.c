@@ -2,6 +2,7 @@
 
 #include <malloc.h>
 #include <stdbool.h>
+#include <threads.h>
 
 Pcp* pcp_create()
 {
@@ -27,6 +28,10 @@ bool pcp_exits(const Pcp* pcp)
 
 void pcp_producer_section_begin(Pcp* pcp, const PcpContainerVirt* virt)
 {
+    if (pcp_exits(pcp)) {
+        return;
+    }
+
     mtx_lock(&pcp->mutex);
     if (virt->is_full(virt->container)) {
         cnd_wait(&pcp->can_produce, &pcp->mutex);
@@ -35,6 +40,33 @@ void pcp_producer_section_begin(Pcp* pcp, const PcpContainerVirt* virt)
 
 void pcp_producer_section_end(Pcp* pcp)
 {
+    cnd_signal(&pcp->can_consume);
+    mtx_unlock(&pcp->mutex);
+}
+
+void pcp_consumer_section_begin(Pcp* pcp, const PcpContainerVirt* virt)
+{
+    if (pcp_exits(pcp)) {
+        return;
+    }
+    
+    mtx_lock(&pcp->mutex);
+    if (virt->is_empty(virt->container)) {
+        cnd_wait(&pcp->can_consume, &pcp->mutex);
+    }
+}
+
+void pcp_consumer_section_end(Pcp* pcp)
+{
+    cnd_signal(&pcp->can_produce);
+    mtx_unlock(&pcp->mutex);
+}
+
+void pcp_stop(Pcp* pcp)
+{
+    mtx_lock(&pcp->mutex);
+    pcp->exits = true;
+    cnd_signal(&pcp->can_produce);
     cnd_signal(&pcp->can_consume);
     mtx_unlock(&pcp->mutex);
 }

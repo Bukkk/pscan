@@ -21,9 +21,12 @@ typedef struct {
 
 
 Pcp* pcp_create(void);
-
 bool pcp_exits(const Pcp* pcp);
+void pcp_stop(Pcp* pcp);
+
 void pcp_producer_section_begin(Pcp* pcp, const PcpContainerVirt* virt);
 void pcp_producer_section_end(Pcp* pcp);
+void pcp_consumer_section_begin(Pcp* pcp, const PcpContainerVirt* virt);
+void pcp_consumer_section_end(Pcp* pcp);
 
 
