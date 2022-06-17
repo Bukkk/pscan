@@ -63,7 +63,7 @@ void rb_add(RingBuffer* rb, void* elem)
     rb->size++;
     rb->put++;
     if (rb->put == rb->capacity) {
-        rb = 0;
+        rb->put = 0;
     }
 }
 

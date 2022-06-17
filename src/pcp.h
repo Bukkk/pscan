@@ -14,8 +14,8 @@ typedef struct {
 
 typedef struct {
     void* container;
-    bool (*is_full)(void* container);
-    bool (*is_empty)(void* container);
+    bool (*is_full)(const void* container);
+    bool (*is_empty)(const void* container);
     
 } PcpContainerVirt;
 

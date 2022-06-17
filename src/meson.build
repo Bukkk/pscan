@@ -3,7 +3,9 @@ pscan_sources = [
 
     'reader.c',
     'pcp.c',
-    'str.c'
+    'str.c',
+    'ring_buffer.c',
+    'analyzer.c'
 ]
 
 pscan = executable('pscan', pscan_sources,

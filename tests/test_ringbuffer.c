@@ -1,5 +1,5 @@
 #include "ring_buffer.h"
-#include "ring_buffer.c"
+#include "ring_buffer.c" // sztuczka aby nie grzebac sie w buildsystemie dla testu
 
 #include <assert.h>
 #include <stdint.h>
