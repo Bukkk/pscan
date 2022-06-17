@@ -49,7 +49,7 @@ void rb_destroy(RingBuffer* rb)
 
 bool rb_is_full(const RingBuffer* rb)
 {
-    return rb->size == rb->capacity;
+    return !(rb->size < rb->capacity);
 }
 
 bool rb_is_empty(const RingBuffer* rb)

@@ -81,9 +81,12 @@ AnalyzedData* analyze_data(const Str* str)
 
     static CpuStats prevs[128] = { 0 };
     static bool is_first = true;
+    if (is_first) {
+        return NULL;
+    }
 
     AnalyzedData* an = an_create(cores);
-    if (an == NULL || is_first) {
+    if (an == NULL) {
         return NULL;
     }
 
