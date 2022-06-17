@@ -12,4 +12,5 @@ pscan_sources = [
 
 pscan = executable('pscan', pscan_sources,
 c_args : build_args,
-link_args : link_args)
+link_args : link_args,
+dependencies : deps)

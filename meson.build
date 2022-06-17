@@ -8,6 +8,11 @@ project('pscan', 'c',
 
 build_args = []
 link_args = []
+deps = []
+
+# zgaduje ze ubuntu ma stare glibc
+thread_dep = dependency('threads')
+deps += [thread_dep]
 
 if meson.get_compiler('c').get_id() == 'clang'
     build_args += ['-Weverything']
