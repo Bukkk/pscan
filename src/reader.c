@@ -7,8 +7,9 @@
 
 Str read_file(const char path[const])
 {
-    enum { TRY_SIZE = 8196 }; // ponad 4k na moim cpu
-    Str string = str_create(TRY_SIZE);
+    static const size_t try_size = 1024 << 4; // ponad 4k na moim cpu
+    
+    Str string = str_create(try_size);
     if (string.data == NULL) {
         return string;
     }
@@ -19,15 +20,15 @@ Str read_file(const char path[const])
     size_t offset = 0;
     while (!can_stop) {
 
-        size_t count = fread(string.data + offset, sizeof(string.data[0]), TRY_SIZE, file);
+        size_t count = fread(string.data + offset, sizeof(string.data[0]), try_size, file);
         string.size += count;
 
-        if (count < TRY_SIZE) {
+        if (count < try_size) {
             can_stop = true;
         } else {
-            offset += TRY_SIZE;
+            offset += try_size;
 
-            bool succ = str_resize(&string, string.capacity + TRY_SIZE);
+            bool succ = str_resize(&string, string.capacity + try_size);
             if (!succ) {
                 can_stop = true;
             }

@@ -8,8 +8,8 @@
 #include "reader.h"
 
 #include "pcp.h"
-#include "signals.h"
 #include "ring_buffer.h"
+#include "signals.h"
 #include "str.h"
 #include "string.h"
 
@@ -24,7 +24,7 @@ static int thread_reader(void* arg)
 {
     ReaderArgs* a = (ReaderArgs*)arg;
 
-    Str proc_stat = {0};
+    Str proc_stat = { 0 };
     while (true) {
         proc_stat = read_file("/proc/stat");
 
@@ -54,7 +54,7 @@ static int thread_analyzer(void* arg)
 {
     AnalyzerArgs* a = (AnalyzerArgs*)arg;
 
-    AnalyzedData* analyzed = {0};
+    AnalyzedData* analyzed = { 0 };
     while (true) {
         pcp_section_consumer_begin(a->pcp_reader_analyzer, a->virt_string);
         if (pcp_section_exits(a->pcp_reader_analyzer)) {
@@ -93,6 +93,8 @@ typedef struct {
 
 static int thread_printer(void* arg)
 {
+    static const time_t sleep_time_ms = 200;
+
     PrinterArgs* a = (PrinterArgs*)arg;
 
     while (true) {
@@ -109,7 +111,7 @@ static int thread_printer(void* arg)
 
         if (analyzed != NULL) {
             print_analized_data(analyzed);
-            thrd_sleep(&(struct timespec) { .tv_nsec = 1000 * 1000 * 200 }, NULL);
+            thrd_sleep(&(struct timespec) { .tv_nsec = 1000 * 1000 * sleep_time_ms }, NULL);
         }
         an_destroy(analyzed);
     }
@@ -171,12 +173,12 @@ int main(void)
     thrd_join(analyzer, NULL);
     thrd_join(printer, NULL);
 
-    while(!rb_is_empty(rb_string)) {
+    while (!rb_is_empty(rb_string)) {
         Str str = *(Str*)rb_get(rb_string);
         rb_remove(rb_string);
         str_destroy(&str);
     }
-    while(!rb_is_empty(rb_analyzed_ptr)) {
+    while (!rb_is_empty(rb_analyzed_ptr)) {
         AnalyzedData* data = *(AnalyzedData**)rb_get(rb_analyzed_ptr);
         rb_remove(rb_analyzed_ptr);
         an_destroy(data);
